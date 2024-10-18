@@ -15,8 +15,11 @@ paypalAPI = Config.PAYPAL_API_BASE
 paypalClient = Config.PAYPAL_CLIENT_ID
 paypalSecret = Config.PAYPAL_SECRET
 
+base_url = Config.BASE_URL
+
 @payments_blueprint.route('/create-payment', methods=['POST'])
 def create_payment():
+
     payment = paypalrestsdk.Payment({
         "intent": "sale",
         "payer": {"payment_method": "paypal"},
@@ -25,8 +28,8 @@ def create_payment():
             "description": "Purchase course"
         }],
         "redirect_urls": {
-            "return_url": "http://localhost:3000/courses/success",
-            "cancel_url": "http://localhost:3000/cancel"
+            "return_url": f"{base_url}/courses?success",
+            "cancel_url": f"{base_url}/courses?cancel"
         }
     })
 
@@ -126,8 +129,8 @@ def pay():
         "intent": "sale",
         "payer": {"payment_method": "paypal"},
         "redirect_urls": {
-            "return_url": f"http://localhost:3000/courses/{order.get('slug')}?success",
-            "cancel_url": f"http://localhost:3000/courses/{order.get('slug')}?cancel"
+            "return_url": f"{base_url}/courses/{order.get('slug')}?success",
+            "cancel_url": f"{base_url}/courses/{order.get('slug')}?cancel"
         },
         "transactions": [{
             "amount": {"total": order.get("amount"), "currency": "USD"},
