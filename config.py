@@ -14,4 +14,6 @@ class Config:
     PAYPAL_CLIENT_ID = os.getenv('PAYPAL_CLIENT_ID')
     PAYPAL_SECRET = os.getenv('PAYPAL_SECRET')
     PAYPAL_API_BASE = os.getenv('PAYPAL_API_BASE')
-    
+    BASE_URL = os.getenv('BASE_URL')
+    ILLUMIDESK_API_URL = os.getenv('ILLUMIDESK_API_URL')
+    API_KEY=os.getenv('API_KEY')
