@@ -1,5 +1,6 @@
 import firebase_admin
 from firebase_admin import auth, credentials
+import re
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask import Blueprint, request, jsonify
 from app import mongo  # Import mongo instance from __init__.py
@@ -10,6 +11,20 @@ auth_blueprint = Blueprint('auth', __name__)
 
 cred = credentials.Certificate("serviceAccountKey.json")
 firebase_admin.initialize_app(cred)
+
+# Password validation function
+def validate_password(password):
+    if len(password) < 8:
+        return "Password must be at least 8 characters long."
+    if not re.search(r"[A-Z]", password):
+        return "Password must contain at least one uppercase letter."
+    if not re.search(r"[a-z]", password):
+        return "Password must contain at least one lowercase letter."
+    if not re.search(r"[0-9]", password):
+        return "Password must contain at least one digit."
+    if not re.search(r"[!@#$%^&*(),.?\":{}|<>]", password):
+        return "Password must contain at least one special character."
+    return None
 
 @auth_blueprint.route('/login', methods=['POST'])
 def login():
@@ -30,9 +45,18 @@ def signup():
     address = data.get('address', {})
     city = address.get('city')
     names = data.get('names')
+    password = data.get('password')
 
     if not email:
         return jsonify({"error": "Email is required"}), 400
+    
+    # Validate password
+    if not password:
+        return jsonify({"error": "Password is required"}), 400
+    
+    password_error = validate_password(password)
+    if password_error:
+        return jsonify({"error": password_error}), 400
 
     try:
         # Check if user already exists
@@ -42,11 +66,11 @@ def signup():
         # Create new user
         user = auth.create_user(
             email=email,
-            password=data.get('password')
+            password=password
         )
 
         # Hash the password if needed
-        hashed_password = generate_password_hash(data.get('password'), method='pbkdf2:sha256')
+        hashed_password = generate_password_hash(password, method='pbkdf2:sha256')
         current_time = datetime.utcnow()
         # Add additional user data if needed
         new_user = {
@@ -68,7 +92,7 @@ def upload_file():
     # Firebase storage logic here (using Firebase SDK)
     return jsonify({"message": "File uploaded successfully"})
 
-@auth_blueprint.route('/logout', methods=['POST'])
+@auth_blueprint.route('/logout', methods=['GET'])
 def logout():
     # Handle logout if needed (e.g., remove session)
     return jsonify({'message': 'Logged out successfully'}), 200
