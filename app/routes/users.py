@@ -51,6 +51,6 @@ def get_users():
         # Convert MongoDB ObjectId to string
         for user in users:
             user['_id'] = str(user['_id'])
-        return jsonify(user), 200
+        return jsonify(users), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
